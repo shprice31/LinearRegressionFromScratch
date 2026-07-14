@@ -1,7 +1,8 @@
 import unittest
 import pandas as pd
+import pandas.testing as pdt
 import numpy as np
-from src.normal_equation import add_intercept_column
+from src.normal_equation import add_intercept_column, fit_using_normal_equation
 from src.data import load_california_housing_data
 
 class TestAddIntercept(unittest.TestCase):
@@ -39,10 +40,36 @@ class TestAddIntercept(unittest.TestCase):
 
 class TestNormalEquation(unittest.TestCase):
     def setUp(self):
+        self.cali_df_split = load_california_housing_data()
+        self.X_w_int = add_intercept_column(self.cali_df_split.X)
+
+        self.beta_hat = fit_using_normal_equation(self.X_w_int, self.cali_df_split.y)
+
+    def test_beta_hat_same_length_as_num_cols(self):
+        """
+        Beta_hat has 1 coefficient for each feature in the design matrix
+        """
+        self.assertEqual(len(self.beta_hat), len(self.X_w_int.columns))
+
+    def test_design_matrix_without_X_int_caught(self):
         pass
 
-    def test_placeholder(self):
-        self.skipTest("tbd")
+    def test_coefficients_are_as_expected(self):
+        """
+        Small toy example to verify coefficient outputs are expected
+        """
+        X = pd.DataFrame([2, 2, 0])
+        y = pd.Series([3, 5, 2])
+
+        beta_hat = fit_using_normal_equation(X, y)
+        expected_result = pd.Series([2, 1])
+
+        pdt.assert_series_equal(beta_hat, expected_result)
+
+            
+
+
+    
 
 if __name__ == '__main__':
     unittest.main()

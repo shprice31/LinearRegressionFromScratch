@@ -7,8 +7,8 @@ def load_california_housing_data() -> df_X_y_split:
     cali_housing = fetch_california_housing(as_frame = True)
 
     return df_X_y_split(
-        X = cali_housing.data,
-        y = cali_housing.target
+        X = cali_housing.data, #type: ignore
+        y = cali_housing.target #type: ignore
     )
 
 
