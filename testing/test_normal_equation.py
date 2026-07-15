@@ -2,7 +2,7 @@ import unittest
 import pandas as pd
 import pandas.testing as pdt
 import numpy as np
-from src.normal_equation import add_intercept_column, fit_using_normal_equation
+from src.normal_equation import add_intercept_column, fit_using_normal_equation, _validate_normal_equation_inputs
 from src.data import load_california_housing_data
 
 class TestAddIntercept(unittest.TestCase):
@@ -51,25 +51,51 @@ class TestNormalEquation(unittest.TestCase):
         """
         self.assertEqual(len(self.beta_hat), len(self.X_w_int.columns))
 
-    def test_design_matrix_without_X_int_caught(self):
-        pass
-
     def test_coefficients_are_as_expected(self):
         """
         Small toy example to verify coefficient outputs are expected
         """
-        X = pd.DataFrame([2, 2, 0])
+        X = pd.DataFrame([[1, 2], [1, 2], [1, 0]])
         y = pd.Series([3, 5, 2])
 
         beta_hat = fit_using_normal_equation(X, y)
-        expected_result = pd.Series([2, 1])
+        expected_result = pd.Series([2., 1.])
 
         pdt.assert_series_equal(beta_hat, expected_result)
+
+    #test _validate_normal_equation_inputs()
+    def test_different_Xy_sizes_raises_value_error(self):
+        X = pd.DataFrame([[1, 2], [1, 2], [1,0]])
+        y = pd.Series([3, 5, 2, 1])
+
+        with self.assertRaisesRegex(ValueError, "X and y have different lengths"):
+            beta_hat = fit_using_normal_equation(X, y)
+
+    def test_missing_X_values_raises_value_error(self):
+        X = pd.DataFrame([[1, 2], [1, None], [1,0]])
+        y = pd.Series([3, 5, 2])
+
+        with self.assertRaisesRegex(ValueError, "X has at least 1 missing value"):
+            beta_hat = fit_using_normal_equation(X, y)
+
+    def test_missing_y_values_raises_value_error(self):
+        X = pd.DataFrame([[1, 2], [1, 2], [1,0]])
+        y = pd.Series([3, 5, None])
+
+        with self.assertRaisesRegex(ValueError, "y has at least 1 missing value"):
+            beta_hat = fit_using_normal_equation(X, y)
+
+    def test_one_col_all_zeroes_raises_value_error(self):
+        X = pd.DataFrame([[0], [0], [0]])
+        y = pd.Series([3, 5, 2])
+
+        with self.assertRaisesRegex(ValueError, "If X has a single column, it must have at least 1 non-zero value"):
+            beta_hat = fit_using_normal_equation(X, y)
+
 
             
 
 
-    
 
 if __name__ == '__main__':
     unittest.main()
