@@ -10,7 +10,7 @@ def add_intercept_column(X: pd.DataFrame) -> pd.DataFrame:
 
     return X
 
-def fit_using_normal_equation(X: pd.DataFrame, y: pd.Series) -> pd.Series:
+def fit_using_normal_equation(X: pd.DataFrame, y: pd.Series) -> pd.DataFrame:
     
     _validate_normal_equation_inputs(X, y)
 
@@ -21,7 +21,8 @@ def fit_using_normal_equation(X: pd.DataFrame, y: pd.Series) -> pd.Series:
     X_t = X.T
     beta_hat = np.linalg.solve(X_t @ X, X_t @ y)
 
-    return pd.Series(beta_hat)
+    return pd.DataFrame(beta_hat)
+
 def _validate_normal_equation_inputs(X: pd.DataFrame, y: pd.Series):
     
     #X has the same number of rows as y
@@ -41,8 +42,15 @@ def _validate_normal_equation_inputs(X: pd.DataFrame, y: pd.Series):
             raise ValueError("If X has a single column, it must have at least 1 non-zero value")
 
 
-def predict_using_lin_reg():
-    pass
+def predict_using_lin_reg(X: pd.DataFrame, beta_hat: pd.DataFrame):
+    """
+    Multiply coefficients by feature matrix to generate predictions
+    """
+
+    preds = X @ beta_hat
+
+    return preds
+
 
 def calculate_residuals():
     pass

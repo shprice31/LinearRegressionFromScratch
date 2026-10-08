@@ -2,7 +2,7 @@ import unittest
 import pandas as pd
 import pandas.testing as pdt
 import numpy as np
-from src.normal_equation import add_intercept_column, fit_using_normal_equation, _validate_normal_equation_inputs
+from src.normal_equation import add_intercept_column, fit_using_normal_equation, _validate_normal_equation_inputs, predict_using_lin_reg
 from src.data import load_california_housing_data
 
 class TestAddIntercept(unittest.TestCase):
@@ -42,7 +42,6 @@ class TestNormalEquation(unittest.TestCase):
     def setUp(self):
         self.cali_df_split = load_california_housing_data()
         self.X_w_int = add_intercept_column(self.cali_df_split.X)
-
         self.beta_hat = fit_using_normal_equation(self.X_w_int, self.cali_df_split.y)
 
     def test_beta_hat_same_length_as_num_cols(self):
@@ -51,7 +50,7 @@ class TestNormalEquation(unittest.TestCase):
         """
         self.assertEqual(len(self.beta_hat), len(self.X_w_int.columns))
 
-    def test_coefficients_are_as_expected(self):
+    def test_coefficients_are_expected(self):
         """
         Small toy example to verify coefficient outputs are expected
         """
@@ -62,6 +61,9 @@ class TestNormalEquation(unittest.TestCase):
         expected_result = pd.Series([2., 1.])
 
         pdt.assert_series_equal(beta_hat, expected_result)
+
+    def test_beta_hat_returned_as_column_vector(self):
+        self.assertEqual(self.beta_hat.shape[1], 1)
 
     #test _validate_normal_equation_inputs()
     def test_different_Xy_sizes_raises_value_error(self):
@@ -92,9 +94,48 @@ class TestNormalEquation(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "If X has a single column, it must have at least 1 non-zero value"):
             beta_hat = fit_using_normal_equation(X, y)
 
+class TestPredictUsingLinReg(unittest.TestCase):
+    def setUp(self):
+        pass
 
-            
 
+    def test_pred_shape_correct(self):
+        pass
+
+    def test_ex_pred_values_are_expected(self):
+        beta_hat = pd.Series([3, 2, 5, 1]).to_frame()
+        X = pd.DataFrame([[1, 2, 3, 5],
+                          [1, 3, 1, 7],
+                          [1, 5, 2, 1],
+                          [1, 10, 0, 2]])
+
+        preds_true = pd.DataFrame([[27],
+                                   [21],
+                                   [24],
+                                   [25]])
+        
+        preds = predict_using_lin_reg(X, beta_hat)
+
+        pd.testing.assert_frame_equal(preds, preds_true)
+    
+    def test_ex_pred_shape_is_expected(self):
+        beta_hat = pd.Series([3, 2, 5, 1]).to_frame()
+        X = pd.DataFrame([[1, 2, 3, 5],
+                               [1, 3, 1, 7],
+                               [1, 5, 2, 1],
+                               [1, 10, 0, 2]])
+        
+        preds = predict_using_lin_reg(X, beta_hat)
+
+        self.assertEqual(preds.shape[0], X.shape[0]) #same number of rows as design matrix
+        self.assertEqual(preds.shape[1], 1) #1 column
+
+    #test _validate_predict_using_lin_reg_inputs()
+    def test_misaligned_beta_hat_X_shape_raises_value_error(self):
+        pass
+
+    def test_beta_hat_0_d_shape_raises_value_error(self):
+        pass
 
 
 if __name__ == '__main__':
