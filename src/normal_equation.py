@@ -3,12 +3,12 @@ import numpy as np
 
 #make your own linear regression class
 
-def add_intercept_column(X: pd.DataFrame) -> pd.DataFrame:
-    X = X.copy()
+def add_intercept_column(X: pd.DataFrame) -> np.ndarray:
+    X = X.to_numpy() 
 
-    X.insert(0, 'Intercept', 1)
+    X_w_intercept = np.insert(X, 0, 1, axis = 1)
 
-    return X
+    return X_w_intercept
 
 def fit_using_normal_equation(X: pd.DataFrame, y: pd.Series) -> pd.DataFrame:
     
