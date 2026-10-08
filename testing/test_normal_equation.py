@@ -5,6 +5,7 @@ import numpy.testing as npt
 import numpy as np
 from src.normal_equation import add_intercept_column, fit_using_normal_equation, _validate_normal_equation_inputs, predict_using_lin_reg
 from src.data import load_california_housing_data
+from sklearn.linear_model import LinearRegression
 
 class TestAddIntercept(unittest.TestCase):
     def setUp(self):
@@ -30,7 +31,6 @@ class TestAddIntercept(unittest.TestCase):
         self.assertEqual(self.X_w_int.shape[0], self.cali_df_split.X.shape[0])
         self.assertEqual(self.X_w_int.shape[1] - 1, self.cali_df_split.X.shape[1])
 
-
 class TestNormalEquation(unittest.TestCase):
     def setUp(self):
         self.cali_df_split = load_california_housing_data()
@@ -41,22 +41,32 @@ class TestNormalEquation(unittest.TestCase):
         """
         Beta_hat has 1 coefficient for each feature in the design matrix
         """
-        self.assertEqual(len(self.beta_hat), len(self.X_w_int.columns))
+        self.assertEqual(self.beta_hat.shape[0], self.X_w_int.shape[1])
 
-    def test_coefficients_are_expected(self):
+    def test_coefficients_are_expected_toy_ex(self):
         """
         Small toy example to verify coefficient outputs are expected
         """
-        X = pd.DataFrame([[1, 2], [1, 2], [1, 0]])
-        y = pd.Series([3, 5, 2])
+        X = np.array([[1, 2], [1, 2], [1, 0]])
+        y = np.array([3, 5, 2])
 
         beta_hat = fit_using_normal_equation(X, y)
-        expected_result = pd.Series([2., 1.])
+        expected_result = np.array([2, 1])
 
-        pdt.assert_series_equal(beta_hat, expected_result)
+        npt.assert_array_equal(beta_hat, expected_result)
 
-    def test_beta_hat_returned_as_column_vector(self):
-        self.assertEqual(self.beta_hat.shape[1], 1)
+    def test_coefficients_are_expected_cali_ex(self):
+        """
+        Test coefficients are expected on a subset of the cali housing dataset, compared to scikit-Learn LinearRegression
+        """
+        lin_model = LinearRegression()
+        lin_model.fit(self.X_w_int, self.cali_df_split.y)
+
+        beta_hat = fit_using_normal_equation(self.X_w_int, self.cali_df_split.y)
+
+        np.testing.assert_allclose(lin_model.coef_[1:], beta_hat[1:], rtol = 3) #excluding intercept
+        np.testing.assert_allclose(lin_model.intercept_, beta_hat[0], rtol = 3)
+
 
     #test _validate_normal_equation_inputs()
     def test_different_Xy_sizes_raises_value_error(self):

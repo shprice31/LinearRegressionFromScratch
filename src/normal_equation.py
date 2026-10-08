@@ -4,26 +4,25 @@ import numpy as np
 #make your own linear regression class
 
 def add_intercept_column(X: pd.DataFrame) -> np.ndarray:
-    X = X.to_numpy() 
+    X = np.array(X) #type:ignore
 
     X_w_intercept = np.insert(X, 0, 1, axis = 1)
 
     return X_w_intercept
 
-def fit_using_normal_equation(X: pd.DataFrame, y: pd.Series) -> pd.DataFrame:
-    
-    _validate_normal_equation_inputs(X, y)
+def fit_using_normal_equation(X, y) -> np.ndarray:
 
-    #reshape
-    X = np.array(X) #type: ignore
-    y = np.array(y) #type: ignore
+    X = np.array(X)
+    y = np.array(y)
+    
+    #_validate_normal_equation_inputs(X, y)
 
     X_t = X.T
     beta_hat = np.linalg.solve(X_t @ X, X_t @ y)
 
-    return pd.DataFrame(beta_hat)
+    return beta_hat
 
-def _validate_normal_equation_inputs(X: pd.DataFrame, y: pd.Series):
+def _validate_normal_equation_inputs(X: np.ndarray, y: np.ndarray):
     
     #X has the same number of rows as y
     if len(X) != len(y):
